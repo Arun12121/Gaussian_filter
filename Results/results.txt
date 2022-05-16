@@ -1,0 +1,13 @@
+unoptimizezd: 125280011
+
+more logic inside loop more harder to unroll,
+
+10 unroll: 102867876
+
+seperable: 16070490
+10 unroll: 846898
+5 inner  : 691375
+partition1 518590 34038 16614
+partition2 397790 61750 23730
+
+fixed point: 86446

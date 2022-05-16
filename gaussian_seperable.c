@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <time.h>
 
 #define smooth_kernel_size 5
 #define sigma 1.0
 #define K  1.0
+#define k 5
 
 #define WIDTH1 480
 #define WIDTH2 360
@@ -18,7 +20,7 @@ void convolution_2D(int N[WIDTH1][WIDTH2], double M[smooth_kernel_size], int P[W
     // find center position of kernel (half of kernel size)
     int kCenterX = smooth_kernel_size / 2;
     int kCenterY = smooth_kernel_size / 2;
-    float T[WIDTH1][WIDTH2];
+    double T[WIDTH1][WIDTH2];
 
     for (int i = 0; i < WIDTH1; ++i)              // rows
     {
@@ -36,6 +38,7 @@ void convolution_2D(int N[WIDTH1][WIDTH2], double M[smooth_kernel_size], int P[W
             }
         }
     }
+
     for (int i = 0; i < WIDTH1; ++i)              // rows
     {
         for (int j = 0; j < WIDTH2; ++j)          // columns
@@ -43,11 +46,11 @@ void convolution_2D(int N[WIDTH1][WIDTH2], double M[smooth_kernel_size], int P[W
             for (int m = 0; m < smooth_kernel_size; ++m)     // kernel rows
             {
                 //int mm = MASK_WIDTH1 - 1 - m;      // row index
-                int ii = j + (m - kCenterY);
+                int jj = j + (m - kCenterX);
 
                 // ignore input samples which are out of bound
-                if (ii >= 0 && ii < WIDTH2)
-                    P[i][j] += T[i][ii] * M[m];
+                if (jj >= 0 && jj < WIDTH2)
+                    P[i][j] += T[i][jj] * M[m];
             }
         }
     }
@@ -60,7 +63,7 @@ int main() {
     double sum_row = 0;
     int i, j;
 
-    ifstream fp("img.txt");
+    ifstream fp("/home/arun/Course_Work/EE5332/img.txt");
     if (! fp) {
         cout << "Error, file couldn't be opened" << endl; 
         return 1; 
@@ -85,15 +88,23 @@ int main() {
     for (i = 0; i < smooth_kernel_size; i++) {
         gauss_row[i] /= sum_row;
     }
-    for (i = 0; i < smooth_kernel_size; i++) {
-        for (j = 0; j < smooth_kernel_size; j++) {
-            //printf("%f ", gauss[i][j]);
-        }
-        //printf("\n");
-    }
 
+    // for (i = 0; i < smooth_kernel_size; i++) {
+    //     for (j = 0; j < smooth_kernel_size; j++) {
+    //         printf("%f ", gauss[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+
+    struct timespec begin, end; 
+    clock_gettime(CLOCK_REALTIME, &begin);
 
     convolution_2D(image, gauss_row, output);
+
+    clock_gettime(CLOCK_REALTIME, &end);
+    long seconds = end.tv_sec - begin.tv_sec;
+    long nanoseconds = end.tv_nsec - begin.tv_nsec;
+    double elapsed = seconds + nanoseconds*1e-9;
 
     for(int row = 0; row < WIDTH1; row++) {  // stop loops if nothing to read
         for(int column = 0; column < WIDTH2; column++){
@@ -101,5 +112,6 @@ int main() {
             }
             cout<<"\n";
     }
+    printf("Time measured: %ld nanoseconds.\n", nanoseconds);
     return 0;
 }
